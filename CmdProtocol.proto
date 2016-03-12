@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+package com.lbwan.game.proto;
+
+enum CmdType {
+
+    CMD_INIT_GAME_DESKTOP_INFO   = 1101;    // 初始化游戏桌面信息
+    CMD_CUT_DOWN_SECS_SYNC   = 1102;        // 倒计时时间同步
+    CMD_SUMBIT_SOME_PORKER   = 1103;        // 出牌
+    CMD_SUMBIT_NULL_PORKER   = 1104;        // 过牌
+    CMD_SUMBIT_PORKER_RESULT = 1105;        // 出牌的结果
+    CMD_GAME_END_OF_RESULT   = 1106;        // 游戏结束的结果下发
+
+    CMD_SERVER_NOTIFY_PAY_TRIBUTE = 1107;    // 服务器通知进贡
+    CMD_PAY_TRIBUTE_REQUEST   = 1108;        // 进贡对应的牌给对方
+    CMD_PAY_TRIBUTE_RESULT    = 1109;        // 进贡的结果
+
+    CMD_SERVER_NOTIFY_BACK_TRIBUTE = 1110;   // 服务器通知退贡
+    CMD_BACK_TRIBUTE_REQUEST  = 1111;        // 退贡
+    CMD_BACK_TRIBUTE_RESPONSE = 1112;        // 退贡的结果
+
+    CMD_REQUEST_GAME_INIT_INFO  = 1113;      //重新请求游戏内的数据
+    CMD_PAY_TRIBUTE_NOTIFY_ALL  = 1114;      //进贡过程通知所有玩家
+    CMD_BACK_TRIBUTE_NOTIFY_ALL = 1115;      //退贡过程通知所有玩家
+
+    CMD_NEED_HOSTING_PORKER = 1116;          // 托管
+    CMD_CANCEL_HOSTING_PORKER = 1117;        // 取消托管
+
+    CMD_GOLD_SYNC_TO_CLIENT  = 1118;         // 金币单项更新到客户端
+    CMD_SERVER_NOTIFY_GROUND = 1119;         // 服务器通知客户端胜场，负场
+    CMD_SERVER_NOTIFY_MAX_PORKER = 1120;     // 通知桌面上最大的牌
+
+    CMD_GAME_SEND_CHAT = 1121;               // 发送聊天消息
+	CMD_GAME_GET_CHAT  = 1122;               // 接收聊天消息
+}

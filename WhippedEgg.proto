@@ -1,0 +1,273 @@
+syntax = "proto2";
+
+package com.lbwan.game.proto;
+
+import "ResultCodeProtocol.proto";
+
+// 游戏任务类型
+enum TaskType{
+   TASK_NULL               = 0;
+   TASK_GAME_BEGIN         = 1;
+   TASK_CLIENT_PERFORMANCE = 2;
+   TASK_GAME_END           = 3;
+   TASK_USER_OPERATION     = 4;
+   TASK_PAY_TRIBUTE        = 5;
+   TASK_BACK_TRIBUTE       = 6;
+}
+
+enum GameResultCode{
+	GRC_SUCCEED = 1;         // 成功
+	GRC_FAIL    = 2;         // 失败
+}
+
+
+enum ConnectionStatus{
+	LOGIN_CONNECTION   = 1;        //  登陆连接
+	LOGIN_RECONNECTION = 2;        //  断线重连
+}
+
+enum LostConnectionStatus{
+	LOST_CONNECTION_PAY_TRIBUTING  = 1;    // 断线重连的状态  进贡
+	LOST_CONNECTION_BACK_TRIBUTING = 2;    // 断线重连的状态  退贡
+	LOST_CONNECTION_PLAYING_NOW    = 3;    // 正在游戏中
+	LOST_CONNECTION_WAIT_START     = 4;    // 等待游戏开始
+}
+
+
+// 玩家牌信息
+message GameUserPorker{
+	required string strUserId = 1;       // 玩家Id
+	repeated int32  porkerArray = 2;     // 手中的牌
+}
+
+// 出牌的结果
+// CMD_SUMBIT_PORKER_RESULT = 1105;
+message GameUserPorkerNum{
+	required string strUserId   = 1;           //
+	required int32 nPorkerNumInHand = 2;
+	optional int32 nMajorFaceValue = 3;        // 当前正在玩的主牌
+}
+
+
+
+// 初始化游戏桌面信息
+// CMD_INIT_GAME_DESKTOP_INFO = 1101;
+message SEnterGameSuccess{
+	required string strSelfUserId = 1;      // 自己的UserId
+    required string strNextUserId = 2;      // 下一个的UserId
+    required string strTeamUserId = 3;      // 队友的userId
+    required string strLastUserId = 4;      // 对于自己而言  最后一个出牌的User
+
+    repeated int32  porkerArray = 5;        // 自己手中的牌
+    required int32  nActiveMajorValue = 6;  // 当前在打的主牌
+    required bool   bIsMajorScene = 7;      // 是否是自己的主场
+
+    required string strCurrentControllerUser = 8;    // 当前控制者
+
+	repeated GameUserPorkerNum  gameUserPorkerNum  = 9;    // 每个玩家手中有的牌的数目
+    required ConnectionStatus connectionStatus     = 10;    // 连接状态   1 登陆连接  2 断线重连
+    optional int32 nCutDwonSecs = 11;                       // 当此时登录的为断线重登   则这时候下发倒计时还剩几秒
+    optional LostConnectionStatus lostConnection = 12;      // 断线重连上 服务器, 此时服务器的情况
+}
+
+
+// 倒计时时间同步
+// CMD_CUT_DOWN_SECS_SYNC  = 1102;
+message SCutDownSecsSync{
+	required string strCurrentController  = 1;   // 当前控制者
+    required int32  nCutDownSecs          = 2;   // 倒计时的秒数
+    required bool   bHandAnyPorker        = 3;   // 是否可以出任意的牌
+}
+
+// 出牌
+// CMD_SUMBIT_SOME_PORKER  = 1103;
+message CSumbitSomePorkerRequest{
+	repeated int32 porkerArray = 1;     // 出手中的牌
+}
+
+// 过牌
+// CMD_SUMBIT_NULL_PORKER  = 1104;
+message CSumbitNumPorkerRequest{
+   // 没有出手任何牌
+}
+
+
+message SSumbitPorkerResultResponse{
+	required GameResultCode     gameResultCode = 1;  // 结果码
+	required string strCurrentController   =2;       // 当前控制者
+	repeated int32 porkerArray = 3;                  // 出牌
+	repeated int32 handPorkerArray = 4;              // 手上的牌
+    repeated GameUserPorkerNum  userPorkerNum = 5;   // 每个玩家的剩余牌的数目
+}
+
+
+message GameUserRank{
+	required string strUserId    = 1;  // 玩家Id
+	required int32  nRankOfGame  = 2;  // 排位
+	required GameResultCode resultCode = 3;  // 在游戏中的胜负
+}
+
+// 游戏结束的结果下发
+// CMD_GAME_END_OF_RESULT   = 1106;
+message SGameEndRequest{
+	repeated GameUserRank userRank = 1;
+}
+
+
+
+// 进贡
+// 如果需要进贡 则下发进贡给需要进贡的客户端
+// CMD_SERVER_NOTIFY_PAY_TRIBUTE = 1107;
+message SServerNotifyPayTribute{
+	repeated string strPayTributerId    = 1;
+	required int32  nPayTributeNeedSecs = 2;
+}
+
+
+// 进贡对应的牌给对方
+// CMD_PAY_TRIBUTE_REQUEST   = 1108;
+message CPayTributeRequest{
+	required int32 nTributePorker = 1;
+}
+
+
+// 进贡后的结果  进贡的牌是否是最大的牌(除主牌红桃外)
+// CMD_PAY_TRIBUTE_RESULT    = 1109;
+message SPayTributeResult{
+	// 如果进贡失败  则需要重新进贡  以符合最大牌的标准 ;  如果进贡成功 , 则可以进行下一个步骤.
+	required GameResultCode payTributeResult = 1;
+}
+
+
+// 服务器通知退贡
+// CMD_SERVER_NOTIFY_BACK_TRIBUTE = 1110;
+message SServerNofityBackTribute{
+	required string strBackTributerId    = 1;
+	required int32  nBackTributeNeedSecs = 2;
+}
+
+// 执行退贡  不能大于10
+// CMD_BACK_TRIBUTE_REQUEST  = 1111;
+message CBackTributeRequest{
+	required int32 nBackTributePorker = 1;
+}
+
+// 退供的结果
+// CMD_BACK_TRIBUTE_RESPONSE = 1112;
+message SBackTributeResponse{
+	required GameResultCode backTributeResult = 1;
+}
+
+// 重新请求游戏内的数据
+// CMD_REQUEST_GAME_INIT_INFO  = 1113;
+message CRequestGameInitInfo{
+
+}
+
+// 进贡过程通知所有玩家
+// CMD_PAY_TRIBUTE_NOTIFY_ALL  = 1114;
+message SPayTributeToAllUser{
+	required string strPayTributeUserId = 1;         // 进贡方
+	required int32  nTributePorkerValue = 2;         // 进贡的牌的值
+	required string strReceivePayTributeUserId = 3;  // 进贡的接受方
+}
+
+
+// 退贡过程通知所有玩家
+// CMD_BACK_TRIBUTE_NOTIFY_ALL = 1115;
+message SBackTributeToAllUser{
+	required string strBackTributeUserId = 1;         // 退贡方
+	required int32  nBackTributePorkerValue = 2;      // 退贡的牌的值
+	required string strReceiveBackTributeUserId = 3;  // 退贡的接受方
+}
+
+
+// 托管
+// CMD_NEED_HOSTING_PORKER = 1116;
+message CHostingPorker{
+
+}
+
+
+// 取消托管
+// CMD_CANCEL_HOSTING_PORKER = 1117;
+message CCancelHostingPorker{
+
+}
+
+
+// 金币单项更新到客户端
+// CMD_GOLD_SYNC_TO_CLIENT = 1118;
+message SServerUpdateGold{
+	required string strUserId = 1;
+	required int32 nGoldValue = 2;
+}
+
+
+message SPlayerGroundInfo{
+	required string strUserId        = 1;  // 玩家Id
+	required int32  nTotalGameRound  = 2;  // 总共的场次数目
+	required int32  nWinGameRound    = 3;  // 胜场场数
+	required int32  nLoseGameRound   = 4;  // 负场场数
+	required int32  nEscapeRound     = 5;  // 逃跑场数
+}
+
+
+// 服务器通知客户端胜场，负场
+// CMD_SERVER_NOTIFY_GROUND = 1119;
+message SServerNotifyPlayerRound{
+	repeated SPlayerGroundInfo playerGround = 1;
+}
+
+// 通知桌面上最大的牌
+// CMD_SERVER_NOTIFY_MAX_PORKER = 1120;
+// 如果是断线重连  并且现在不是执行进贡退工  而是在游戏中，则此时应该把牌桌上最大的牌
+message SServerNotifyMaxPorkerInfo{
+	required string  strMaxPorkerUser    = 1;   // 牌桌上最大的牌的出牌者
+	repeated int32   nMaxPorkerValueList = 2;   // 牌桌上最大的牌
+}
+
+
+enum SUnitType {
+//字符串
+	unit_string = 0;
+	unit_sexpress = 1;
+}
+
+// 聊天的一个单元
+message SChatUnit {
+	required SUnitType unitType = 1;
+	optional string strMsg = 2;
+}
+
+//聊天频道
+enum ChannelType {
+	WORLD = 1; // 世界
+	PRIVATE = 2; // 私聊
+}
+
+//发送聊天一句话
+//CMD=[CMD_GAME_SEND_CHAT]
+message ChatWord {
+	required ChannelType channelType = 1;
+	optional string sayer = 2;
+	optional string listener = 3;
+	repeated SChatUnit chatUnit = 4;
+	optional string playerId = 5;
+}
+
+
+
+// 下发聊天的缓存信息
+// CMD_GAME_SEND_CHAT = 1115;
+message SChats {
+	repeated ChatWord chatWord = 1;
+}
+
+
+// 聊天响应
+// CMD_GAME_GET_CHAT = 1116;
+message SChatRespond {
+	required ResultCode result = 1;
+	optional string listener = 2;    //如果对方不在线，需要告知谁不在线
+}

@@ -1,0 +1,20 @@
+syntax = "proto2";
+
+package com.lbwan.game.proto;
+
+//错误码
+enum ResultCode {
+	SUCCESS = 0; //成功
+	ERR_NORMAL = 1; //一般错误
+	ERR_TOKEN = 2; //TOKEN不存在
+	ERR_PLAYER = 3; //玩家不在本局游戏内
+	ERR_UNACTION = 4; //当前玩家不可操作
+	ERR_GAME_UNSTART = 5; //当前游戏未开始
+	ERR_SELECT_RANGE = 6; //事件选择不在范围内
+	ERR_IN_THE_GAME = 7;//游戏进行中(获取下一局开始时间时返回)
+
+	RESULT_SELF_GAME_RUNNING = 9;   // 失败  游戏已经开始在运行中
+}
+
+
+
